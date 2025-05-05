@@ -21,7 +21,7 @@ newsapi = NewsApiClient(api_key=api_key)
 analyzer = SentimentIntensityAnalyzer()
 bert_classifier = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment")
 
-#util functions
+# Utility Functions
 @st.cache_data
 def get_sources():
     response = newsapi.get_sources(language='en')
@@ -124,6 +124,14 @@ if st.button("Analyze"):
                 df['bert_sentiment_desc'] = df['description'].apply(get_bert_sentiment)
                 df['bert_sentiment_combined'] = df.apply(merge_bert_sentiments, axis=1)
 
+                # Label mapping fix
+                bert_label_map = {
+                    "label_0": "Critical/Opposing",
+                    "label_1": "Neutral",
+                    "label_2": "Pro/Supportive"
+                }
+                df['bert_sentiment_combined'] = df['bert_sentiment_combined'].map(bert_label_map).fillna(df['bert_sentiment_combined'])
+
                 if df['stance'].nunique() < 2:
                     st.warning("This topic appears to have low stance diversity. Content may be too neutral for clear bias detection.")
 
@@ -152,7 +160,7 @@ if st.button("Analyze"):
                     ax.set_xlabel("count")
                 st.pyplot(fig)
 
-                st.subheader("🧾 Detailed Output with ML Prediction")
+                st.subheader("🗾 Detailed Output with ML Prediction")
                 st.dataframe(df[['source', 'title', 'url', 'sentiment_avg', 'stance', 'bert_sentiment_combined', 'ML_Predicted_Stance']])
 
                 st.download_button("Download CSV", df.to_csv(index=False), file_name="bias_results.csv")
