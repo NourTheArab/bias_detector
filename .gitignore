@@ -23,7 +23,3 @@ env.bak/
 
 # Streamlit
 .streamlit/
-
-# Data files
-*.csv
-*.png
